@@ -57,17 +57,19 @@
     var phraseIdx = 0;
     var charIdx = 0;
     var deleting = false;
-    var pauseTime = 2000;
+    var pauseTime = 3000;
 
     function getPhrases() {
       if (window.__I18N__ && window.__I18N__['hero.sub']) {
-        return [window.__I18N__['hero.sub']];
+        var sub = window.__I18N__['hero.sub'];
+        return [sub, 'Innovating the Future', 'Building Amazing Products', 'Empowering Developers', 'Open Source First'];
       }
       return phrases;
     }
 
     function type() {
-      var current = getPhrases()[phraseIdx];
+      var allPhrases = getPhrases();
+      var current = allPhrases[phraseIdx % allPhrases.length];
       if (!deleting) {
         el.textContent = current.substring(0, charIdx + 1);
         charIdx++;
@@ -76,20 +78,20 @@
           setTimeout(type, pauseTime);
           return;
         }
-        setTimeout(type, 80);
+        setTimeout(type, 150);
       } else {
         el.textContent = current.substring(0, charIdx - 1);
         charIdx--;
         if (charIdx === 0) {
           deleting = false;
-          phraseIdx = (phraseIdx + 1) % getPhrases().length;
+          phraseIdx++;
           setTimeout(type, 500);
           return;
         }
-        setTimeout(type, 40);
+        setTimeout(type, 80);
       }
     }
-    setTimeout(type, 1000);
+    setTimeout(type, 1500);
   }
 
   /* ===== Particle effect on hero ===== */
