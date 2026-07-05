@@ -40,61 +40,59 @@
     observer.observe(bar);
   }
 
-  /* ===== Typing animation for hero ===== */
-  var typewriterDone = false;
-  function initTypewriter() {
-    if (typewriterDone) return;
-    typewriterDone = true;
-    var phrases = [
-      'Innovating the Future',
-      'Building Amazing Products',
-      'Empowering Developers',
-      'Open Source First'
-    ];
-    var el = document.getElementById('typer');
-    if (!el) return;
+  /* ===== Typing animation ===== */
+  var typerEl = null;
+  var typerTimer = null;
+  var typerPhraseIdx = 0;
+  var typerCharIdx = 0;
+  var typerDeleting = false;
 
-    var phraseIdx = 0;
-    var charIdx = 0;
-    var deleting = false;
-    var pauseTime = 3000;
-
-    function getPhrases() {
-      if (window.__I18N__ && window.__I18N__['hero.sub']) {
-        var sub = window.__I18N__['hero.sub'];
-        return [sub, 'Innovating the Future', 'Building Amazing Products', 'Empowering Developers', 'Open Source First'];
-      }
-      return phrases;
+  function getTyperPhrases() {
+    if (window.__I18N__ && Array.isArray(window.__I18N__['hero.typer']) && window.__I18N__['hero.typer'].length > 0) {
+      return window.__I18N__['hero.typer'];
     }
-
-    function type() {
-      var allPhrases = getPhrases();
-      var current = allPhrases[phraseIdx % allPhrases.length];
-      if (!deleting) {
-        el.textContent = current.substring(0, charIdx + 1);
-        charIdx++;
-        if (charIdx === current.length) {
-          deleting = true;
-          setTimeout(type, pauseTime);
-          return;
-        }
-        setTimeout(type, 150);
-      } else {
-        el.textContent = current.substring(0, charIdx - 1);
-        charIdx--;
-        if (charIdx === 0) {
-          deleting = false;
-          phraseIdx++;
-          setTimeout(type, 500);
-          return;
-        }
-        setTimeout(type, 80);
-      }
-    }
-    setTimeout(type, 1500);
+    return [''];
   }
 
-  /* ===== Particle effect on hero ===== */
+  function typerTick() {
+    if (!typerEl) return;
+    var phrases = getTyperPhrases();
+    var phrase = phrases[typerPhraseIdx % phrases.length];
+
+    if (!typerDeleting) {
+      typerEl.textContent = phrase.substring(0, typerCharIdx + 1);
+      typerCharIdx++;
+      if (typerCharIdx >= phrase.length) {
+        typerDeleting = true;
+        typerTimer = setTimeout(typerTick, 3000);
+        return;
+      }
+      typerTimer = setTimeout(typerTick, 150);
+    } else {
+      typerEl.textContent = phrase.substring(0, typerCharIdx - 1);
+      typerCharIdx--;
+      if (typerCharIdx <= 0) {
+        typerDeleting = false;
+        typerPhraseIdx++;
+        typerTimer = setTimeout(typerTick, 500);
+        return;
+      }
+      typerTimer = setTimeout(typerTick, 80);
+    }
+  }
+
+  function startTyper() {
+    typerEl = document.getElementById('typer');
+    if (!typerEl) return;
+    typerPhraseIdx = 0;
+    typerCharIdx = 0;
+    typerDeleting = false;
+    if (typerTimer) clearTimeout(typerTimer);
+    typerEl.textContent = '';
+    typerTimer = setTimeout(typerTick, 1500);
+  }
+
+  /* ===== Particle effect ===== */
   function initParticles() {
     var canvas = document.getElementById('particle-canvas');
     if (!canvas) return;
@@ -132,7 +130,6 @@
         if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
         if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
       });
-      /* Draw connections */
       for (var i = 0; i < particles.length; i++) {
         for (var j = i + 1; j < particles.length; j++) {
           var dx = particles[i].x - particles[j].x;
@@ -158,7 +155,7 @@
     initScrollAnimations();
     initNavScroll();
     animateProgress();
-    initTypewriter();
+    startTyper();
     initParticles();
   }
 
@@ -168,9 +165,7 @@
     boot();
   }
 
-  /* Re-run typewriter on language change */
   document.addEventListener('languagechange', function () {
-    typewriterDone = false;
-    setTimeout(initTypewriter, 100);
+    startTyper();
   });
 })();
